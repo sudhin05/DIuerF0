@@ -69,7 +69,7 @@ def fxn_get_transforms(img_size=384, is_train=True):
             
             # Simulate bad camera conditions
             A.OneOf([
-                A.GaussNoise(std_range=(10.0, 50.0), p=1.0),
+                A.GaussNoise(std_range=(0.04, 0.2), p=1.0),
                 A.ISONoise(color_shift=(0.01, 0.05), intensity=(0.1, 0.5), p=1.0),
             ], p=0.15),
             

@@ -166,7 +166,7 @@ def train_fold(fold, train_idx, val_idx, df, img_dir, config):
         
     return best_metrics
 
-def main(kaggle_dir = '/kaggle/input/datasets/sudhin05/freuid-dataset'):
+def main(kaggle_dir = '/kaggle/working/freuid-dataset'):
     seed = 42
     np.random.seed(seed)
     torch.manual_seed(seed)

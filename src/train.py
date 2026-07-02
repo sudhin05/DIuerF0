@@ -178,11 +178,11 @@ def main(kaggle_dir = '/kaggle/working/freuid-dataset'):
     config = {
         'model_name': 'tf_efficientnetv2_s.in21k_ft_in1k',
         'img_size': 384,
-        'batch_size': 32,  
+        'batch_size': 64,  
         'lr': 1e-4,  # Lowered learning rate for stability
         'weight_decay': 1e-4,
         'epochs': 5,        
-        'num_workers': 2,  # Reduced from 4 to prevent CPU thread starvation on Kaggle
+        'num_workers': 1,  
         'n_splits': 5,
         'save_dir': 'weights',
     }

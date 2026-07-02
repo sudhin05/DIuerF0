@@ -62,7 +62,7 @@ def fxn_get_transforms(img_size=384, is_train=True):
             
             # Simulate the Analog Hole (Print-and-Capture)
             A.OneOf([
-                A.ImageCompression(quality_range=(50, 90), p=1.0),
+                # A.ImageCompression(quality_range=(50, 90), p=1.0),  # EXTREMELY SLOW ON CPU!
                 A.GaussianBlur(blur_limit=(3, 7), p=1.0),
                 A.MotionBlur(blur_limit=5, p=1.0),
             ], p=0.2),
@@ -70,7 +70,7 @@ def fxn_get_transforms(img_size=384, is_train=True):
             # Simulate bad camera conditions
             A.OneOf([
                 A.GaussNoise(std_range=(0.04, 0.2), p=1.0),
-                A.ISONoise(color_shift=(0.01, 0.05), intensity=(0.1, 0.5), p=1.0),
+                # A.ISONoise(color_shift=(0.01, 0.05), intensity=(0.1, 0.5), p=1.0), # EXTREMELY SLOW ON CPU!
             ], p=0.15),
             
             A.RandomBrightnessContrast(brightness_limit=0.2, contrast_limit=0.2, p=0.5),

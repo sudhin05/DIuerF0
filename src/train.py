@@ -182,7 +182,7 @@ def main(kaggle_dir = '/kaggle/working/freuid-dataset'):
         'lr': 1e-4,  # Lowered learning rate for stability
         'weight_decay': 1e-4,
         'epochs': 5,        
-        'num_workers': 4,
+        'num_workers': 2,  # Reduced from 4 to prevent CPU thread starvation on Kaggle
         'n_splits': 5,
         'save_dir': 'weights',
     }

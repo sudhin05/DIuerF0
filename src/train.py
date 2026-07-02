@@ -1,4 +1,13 @@
 import os
+# Prevent thread oversubscription in OpenCV and Albumentations (Crucial for PyTorch DataLoaders)
+os.environ["OMP_NUM_THREADS"] = "1"
+os.environ["OPENBLAS_NUM_THREADS"] = "1"
+os.environ["MKL_NUM_THREADS"] = "1"
+os.environ["VECLIB_MAXIMUM_THREADS"] = "1"
+os.environ["NUMEXPR_NUM_THREADS"] = "1"
+import cv2
+cv2.setNumThreads(0)
+
 import time
 import numpy as np
 import pandas as pd

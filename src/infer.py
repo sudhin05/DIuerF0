@@ -8,17 +8,24 @@ from tqdm import tqdm
 from src.dataset import FreuidDataset, fxn_get_transforms
 from src.models import fxn_get_model
 
-def main():
+def main(kaggle_dir = '/kaggle/input/the-freuid-challenge-2026-ijcai-ecai'):
     config = {
         'model_name': 'tf_efficientnetv2_s.in21k_ft_in1k',
         'img_size': 384,
         'batch_size': 64,  
         'num_workers': 0, 
-        'weights_path': 'weights/best_model_fold_0.pth',
-        'sample_sub_path': 'Data/sample_submission.csv',
-        'img_dir': 'Data',
+        'n_splits': 5,
+        'weights_dir': 'weights',
         'output_path': 'submission.csv'
     }
+
+    if os.path.exists(kaggle_dir):
+        print(f"Detected Kaggle environment. Using data from {kaggle_dir}")
+        config['img_dir'] = kaggle_dir
+        config['sample_sub_path'] = os.path.join(kaggle_dir, 'sample_submission.csv')
+    else:
+        config['img_dir'] = 'Data'
+        config['sample_sub_path'] = 'Data/sample_submission.csv'
 
     # Use AI for sucessive print statements for tracking run
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -40,36 +47,55 @@ def main():
         pin_memory=True
     )
 
-    print(f"Loading model {config['model_name']}...")
-    model = fxn_get_model(config['model_name'], pretrained=False)
+    print(f"Creating base model {config['model_name']}...")
+    base_model = fxn_get_model(config['model_name'], pretrained=False)
     
-    if not os.path.exists(config['weights_path']):
-        raise FileNotFoundError(f"Could not find weights at {config['weights_path']}")
+    if torch.cuda.device_count() > 1:
+        print(f"Using {torch.cuda.device_count()} GPUs with DataParallel for Inference!")
+        base_model = torch.nn.DataParallel(base_model)
+    base_model.to(device)
+    
+    # Pre-allocate array for ensembled predictions
+    all_preds = np.zeros(len(test_dataset))
+    all_ids = []
+    
+    for fold in range(config['n_splits']):
+        weights_path = os.path.join(config['weights_dir'], f"best_model_fold_{fold}.pth")
+        print(f"\n--- Loading Fold {fold} from {weights_path} ---")
+        if not os.path.exists(weights_path):
+            print(f"Warning: {weights_path} not found. Skipping fold {fold}.")
+            continue
+            
+        state_dict = torch.load(weights_path, map_location=device)
+        if isinstance(base_model, torch.nn.DataParallel):
+            base_model.module.load_state_dict(state_dict)
+        else:
+            base_model.load_state_dict(state_dict)
+            
+        base_model.eval()
         
-    model.load_state_dict(torch.load(config['weights_path'], map_location=device))
-    model.to(device)
-    model.eval()
-
-    print("Starting inference...")
-    ids = []
-    preds = []
-    
-    with torch.no_grad():
-        for images, batch_ids in tqdm(test_loader, desc="Inference"):
-            images = images.to(device)
-            
-            with torch.amp.autocast('cuda'):
-                outputs = model(images)
+        fold_preds = []
+        fold_ids = []
+        
+        with torch.no_grad():
+            for images, batch_ids in tqdm(test_loader, desc=f"Inference Fold {fold}"):
+                images = images.to(device)
+                with torch.amp.autocast('cuda'):
+                    outputs = base_model(images)
+                probs = torch.sigmoid(outputs).cpu().numpy().flatten()
                 
-            probs = torch.sigmoid(outputs).cpu().numpy().flatten()
-            
-            ids.extend(batch_ids)
-            preds.extend(probs)
+                fold_preds.extend(probs)
+                if fold == 0:
+                    fold_ids.extend(batch_ids)
+                    
+        all_preds += np.array(fold_preds) / config['n_splits']
+        if fold == 0:
+            all_ids = fold_ids
 
     print("Generating submission.csv...")
     sub_df = pd.DataFrame({
-        'id': ids,
-        'label': preds
+        'id': all_ids,
+        'label': all_preds
     })
     
 

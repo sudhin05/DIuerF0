@@ -65,13 +65,13 @@ def fxn_get_transforms(img_size=384, is_train=True):
                 A.ImageCompression(quality_lower=50, quality_upper=90, p=1.0),
                 A.GaussianBlur(blur_limit=(3, 7), p=1.0),
                 A.MotionBlur(blur_limit=5, p=1.0),
-            ], p=0.4),
+            ], p=0.2),
             
             # Use: Simulation of bad camera conditions
             A.OneOf([
                 A.GaussNoise(var_limit=(10.0, 50.0), p=1.0),
                 A.ISONoise(color_shift=(0.01, 0.05), intensity=(0.1, 0.5), p=1.0),
-            ], p=0.3),
+            ], p=0.15),
             
             A.RandomBrightnessContrast(brightness_limit=0.2, contrast_limit=0.2, p=0.5),
             A.HueSaturationValue(hue_shift_limit=20, sat_shift_limit=30, val_shift_limit=20, p=0.3),

@@ -108,7 +108,11 @@ def train_fold(fold, train_idx, val_idx, df, img_dir, config):
         pin_memory=True
     )
     
+    # Model
     model = fxn_get_model(config['model_name'], pretrained=True)
+    if torch.cuda.device_count() > 1:
+        print(f"Using {torch.cuda.device_count()} GPUs with DataParallel!")
+        model = nn.DataParallel(model)
     model.to(device)
     
     optimizer = torch.optim.AdamW(model.parameters(), lr=config['lr'], weight_decay=config['weight_decay'])
@@ -141,7 +145,8 @@ def train_fold(fold, train_idx, val_idx, df, img_dir, config):
         if freuid_score < best_freuid:
             best_freuid = freuid_score
             best_metrics = val_metrics
-            torch.save(model.state_dict(), model_save_path)
+            state_dict = model.module.state_dict() if isinstance(model, nn.DataParallel) else model.state_dict()
+            torch.save(state_dict, model_save_path)
             print(f"  --> Saved new best model with FREUID: {best_freuid:.4f} to {model_save_path}")
             
     try:
@@ -165,16 +170,23 @@ def main():
         'model_name': 'tf_efficientnetv2_s.in21k_ft_in1k',
         'img_size': 384,
         'batch_size': 32,  
-        'lr': 1e-4, 
+        'lr': 1e-4,  # Lowered learning rate for stability
         'weight_decay': 1e-4,
-        'epochs': 3,        
+        'epochs': 5,        
         'num_workers': 4,
         'n_splits': 5,
         'save_dir': 'weights',
     }
     
-    train_csv_path = 'Data/train_labels.csv'
-    img_dir = 'Data'
+    kaggle_dir = '/kaggle/input/the-freuid-challenge-2026-ijcai-ecai'
+    if os.path.exists(kaggle_dir):
+        print(f"Detected Kaggle environment. Using data from {kaggle_dir}")
+        img_dir = kaggle_dir
+        train_csv_path = os.path.join(kaggle_dir, 'train_labels.csv')
+    else:
+        print("Using local data directory 'Data/'")
+        img_dir = 'Data'
+        train_csv_path = 'Data/train_labels.csv'
     
     df = pd.read_csv(train_csv_path)
     print(f"Loaded train metadata: {len(df)} samples")
@@ -188,12 +200,9 @@ def main():
     fold_metrics = []
     
     for fold, (train_idx, val_idx) in enumerate(skf.split(df, df['stratify_col'])):
+        # Train all 5 folds
         metrics = train_fold(fold, train_idx, val_idx, df, img_dir, config)
         fold_metrics.append(metrics)
-        
-        # TO DO: Break after fold 0 and let it run for all folds
-        print("\nStopping after Fold 0 for baseline verification.")
-        break
         
     print("\nTraining completed.")
     print("Fold 0 Metrics:")

@@ -157,7 +157,7 @@ def train_fold(fold, train_idx, val_idx, df, img_dir, config):
         
     return best_metrics
 
-def main():
+def main(kaggle_dir = '/kaggle/input/datasets/sudhin05/freuid-dataset'):
     seed = 42
     np.random.seed(seed)
     torch.manual_seed(seed)
@@ -178,7 +178,6 @@ def main():
         'save_dir': 'weights',
     }
     
-    kaggle_dir = '/kaggle/input/the-freuid-challenge-2026-ijcai-ecai'
     if os.path.exists(kaggle_dir):
         print(f"Detected Kaggle environment. Using data from {kaggle_dir}")
         img_dir = kaggle_dir

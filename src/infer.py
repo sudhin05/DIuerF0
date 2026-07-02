@@ -8,7 +8,7 @@ from tqdm import tqdm
 from src.dataset import FreuidDataset, fxn_get_transforms
 from src.models import fxn_get_model
 
-def main(kaggle_dir = '/kaggle/input/the-freuid-challenge-2026-ijcai-ecai'):
+def main(kaggle_dir = '/kaggle/input/datasets/sudhin05/freuid-dataset'):
     config = {
         'model_name': 'tf_efficientnetv2_s.in21k_ft_in1k',
         'img_size': 384,

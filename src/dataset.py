@@ -58,18 +58,18 @@ def fxn_get_transforms(img_size=384, is_train=True):
         return A.Compose([
             A.Resize(img_size, img_size),
             A.HorizontalFlip(p=0.5),
-            A.ShiftScaleRotate(shift_limit=0.05, scale_limit=0.1, rotate_limit=10, p=0.5),
+            A.Affine(translate_percent=(-0.05, 0.05), scale=(0.9, 1.1), rotate=(-10, 10), p=0.5),
             
-            # Use: Simulation of the Analog Hole (Print-and-Capture)
+            # Simulate the Analog Hole (Print-and-Capture)
             A.OneOf([
-                A.ImageCompression(quality_lower=50, quality_upper=90, p=1.0),
+                A.ImageCompression(quality_range=(50, 90), p=1.0),
                 A.GaussianBlur(blur_limit=(3, 7), p=1.0),
                 A.MotionBlur(blur_limit=5, p=1.0),
             ], p=0.2),
             
-            # Use: Simulation of bad camera conditions
+            # Simulate bad camera conditions
             A.OneOf([
-                A.GaussNoise(var_limit=(10.0, 50.0), p=1.0),
+                A.GaussNoise(std_range=(10.0, 50.0), p=1.0),
                 A.ISONoise(color_shift=(0.01, 0.05), intensity=(0.1, 0.5), p=1.0),
             ], p=0.15),
             

@@ -181,7 +181,7 @@ def main(kaggle_dir = '/kaggle/working/freuid-dataset'):
         'batch_size': 128,  
         'lr': 1e-4,  # Lowered learning rate for stability
         'weight_decay': 1e-4,
-        'epochs': 5,        
+        'epochs': 15,  # Increased from 5 to 15 to compensate for the 4x larger batch size
         'num_workers': 8,  # Optimized for Ryzen 9 on vast.ai
         'n_splits': 5,
         'save_dir': 'weights',

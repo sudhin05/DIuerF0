@@ -81,8 +81,16 @@ def main(kaggle_dir = '/kaggle/working/freuid-dataset'):
             for images, batch_ids in tqdm(test_loader, desc=f"Inference Fold {fold}"):
                 images = images.to(device)
                 with torch.amp.autocast('cuda'):
-                    outputs = base_model(images)
-                probs = torch.sigmoid(outputs).cpu().numpy().flatten()
+                    # Standard pass
+                    outputs1 = base_model(images)
+                    probs1 = torch.sigmoid(outputs1)
+                    
+                    # TTA pass (Horizontal Flip)
+                    outputs2 = base_model(torch.flip(images, dims=[3]))
+                    probs2 = torch.sigmoid(outputs2)
+                    
+                # Average the probabilities from both passes
+                probs = ((probs1 + probs2) / 2.0).cpu().numpy().flatten()
                 
                 fold_preds.extend(probs)
                 if fold == 0:

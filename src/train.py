@@ -31,11 +31,15 @@ def fxn_train_one_epoch(model, dataloader, criterion, optimizer, scaler, device)
         images = images.to(device)
         labels = labels.to(device).unsqueeze(1)
         
+        # Soft Label Smoothing (0.05) to prevent extreme probabilities
+        # Transforms 0.0 -> 0.05, and 1.0 -> 0.95
+        smoothed_labels = labels * (1 - 0.1) + 0.05
+        
         optimizer.zero_grad()
         
         with torch.amp.autocast('cuda'):
             outputs = model(images)
-            loss = criterion(outputs, labels)
+            loss = criterion(outputs, smoothed_labels)
             
         scaler.scale(loss).backward()
         scaler.step(optimizer)

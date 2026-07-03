@@ -59,6 +59,7 @@ def main(kaggle_dir = '/kaggle/working/freuid-dataset'):
     all_preds = np.zeros(len(test_dataset))
     all_ids = []
     
+    loaded_folds = 0
     for fold in range(config['n_splits']):
         weights_path = os.path.join(config['weights_dir'], f"best_model_fold_{fold}.pth")
         print(f"\n--- Loading Fold {fold} from {weights_path} ---")
@@ -66,6 +67,7 @@ def main(kaggle_dir = '/kaggle/working/freuid-dataset'):
             print(f"Warning: {weights_path} not found. Skipping fold {fold}.")
             continue
             
+        loaded_folds += 1
         state_dict = torch.load(weights_path, map_location=device)
         if isinstance(base_model, torch.nn.DataParallel):
             base_model.module.load_state_dict(state_dict)
@@ -93,12 +95,17 @@ def main(kaggle_dir = '/kaggle/working/freuid-dataset'):
                 probs = ((probs1 + probs2) / 2.0).cpu().numpy().flatten()
                 
                 fold_preds.extend(probs)
-                if fold == 0:
+                if loaded_folds == 1:
                     fold_ids.extend(batch_ids)
                     
-        all_preds += np.array(fold_preds) / config['n_splits']
-        if fold == 0:
+        all_preds += np.array(fold_preds)
+        if loaded_folds == 1:
             all_ids = fold_ids
+
+    if loaded_folds > 0:
+        all_preds = all_preds / loaded_folds
+    else:
+        print("Error: No models were loaded! Submission will be all zeros.")
 
     print("Generating submission.csv...")
     sub_df = pd.DataFrame({

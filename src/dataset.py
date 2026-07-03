@@ -65,19 +65,6 @@ def fxn_get_transforms(img_size=384, is_train=True):
             A.HorizontalFlip(p=0.5),
             A.Affine(translate_percent=(-0.05, 0.05), scale=(0.9, 1.1), rotate=(-10, 10), p=0.5),
             
-            # Simulate the Analog Hole (Print-and-Capture)
-            A.OneOf([
-                A.ImageCompression(quality_range=(50, 90), p=1.0),
-                A.GaussianBlur(blur_limit=(3, 7), p=1.0),
-                A.MotionBlur(blur_limit=5, p=1.0),
-            ], p=0.2),
-            
-            # Simulate bad camera conditions
-            A.OneOf([
-                A.GaussNoise(std_range=(0.04, 0.2), p=1.0),
-                A.ISONoise(color_shift=(0.01, 0.05), intensity=(0.1, 0.5), p=1.0),
-            ], p=0.15),
-            
             A.RandomBrightnessContrast(brightness_limit=0.2, contrast_limit=0.2, p=0.5),
             A.HueSaturationValue(hue_shift_limit=20, sat_shift_limit=30, val_shift_limit=20, p=0.3),
             

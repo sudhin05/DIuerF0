@@ -61,7 +61,9 @@ def fxn_get_transforms(img_size=384, is_train=True):
 
     if is_train:
         return A.Compose([
-            A.Resize(img_size, img_size),
+            A.LongestMaxSize(max_size=600),
+            A.PadIfNeeded(min_height=600, min_width=600, border_mode=cv2.BORDER_CONSTANT, value=0),
+            A.RandomCrop(width=img_size, height=img_size),
             A.HorizontalFlip(p=0.5),
             A.Affine(translate_percent=(-0.05, 0.05), scale=(0.9, 1.1), rotate=(-10, 10), p=0.5),
             
@@ -77,7 +79,9 @@ def fxn_get_transforms(img_size=384, is_train=True):
         ])
     else:
         return A.Compose([
-            A.Resize(img_size, img_size),
+            A.LongestMaxSize(max_size=600),
+            A.PadIfNeeded(min_height=600, min_width=600, border_mode=cv2.BORDER_CONSTANT, value=0),
+            A.CenterCrop(width=img_size, height=img_size),
             A.Normalize(
                 mean=[0.485, 0.456, 0.406],
                 std=[0.229, 0.224, 0.225],

@@ -187,7 +187,7 @@ def main(kaggle_dir = '/kaggle/working/freuid-dataset'):
         'weight_decay': 1e-4,
         'epochs': 15,  
         'num_workers': 2, 
-        'n_splits': 1,
+        'n_splits': 2,
         'save_dir': 'weights',
     }
     

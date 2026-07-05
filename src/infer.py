@@ -12,11 +12,11 @@ def main(kaggle_dir = '/kaggle/working/freuid-dataset'):
     config = {
         'model_name': 'tf_efficientnetv2_s.in21k_ft_in1k',
         'img_size': 384,
-        'batch_size': 64,  
+        'batch_size': 256,  
         'num_workers': 2, 
-        'n_splits': 5,
-        'weights_dir': 'weights/run3-vast/',
-        'output_path': 'submission-run3v-fold0-1-2.csv'
+        'n_splits': 1,
+        'weights_dir': 'weights/run4-vast/',
+        'output_path': 'submission-run4v-fold0.csv'
     }
 
     if os.path.exists(kaggle_dir):
